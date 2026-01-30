@@ -19,20 +19,31 @@ class TodoApp {
     }
 
     addDemoTask() {
-        // 添加一个示例任务
-        const demoTodo = {
-            id: Date.now(),
-            text: '欢迎使用Moltbot Todo List应用！',
-            completed: false,
-            createdAt: new Date().toISOString()
-        };
+        // 添加示例任务
+        const demoTodos = [
+            {
+                id: Date.now(),
+                text: '欢迎使用Moltbot Todo List应用！',
+                completed: false,
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: Date.now() + 1,
+                text: '这个任务展示了工作空间路径已更新至 D:\\moltbot-workspace',
+                completed: false,
+                createdAt: new Date().toISOString()
+            }
+        ];
         
-        // 检查是否已存在此示例任务
-        const existingDemoTask = this.todos.find(todo => todo.text === demoTodo.text);
-        if (!existingDemoTask) {
-            this.todos.push(demoTodo);
-            this.saveTodos();
+        // 检查是否已存在这些示例任务
+        for (const demoTodo of demoTodos) {
+            const existingDemoTask = this.todos.find(todo => todo.text === demoTodo.text);
+            if (!existingDemoTask) {
+                this.todos.push(demoTodo);
+            }
         }
+        
+        this.saveTodos();
     }
 
     bindEvents() {
