@@ -7,9 +7,32 @@ class TodoApp {
     }
 
     init() {
+        // 检查是否有示例任务，如果没有则添加
+        if (!localStorage.getItem('demoTaskAdded')) {
+            this.addDemoTask();
+            localStorage.setItem('demoTaskAdded', 'true');
+        }
+        
         this.bindEvents();
         this.render();
         this.updateStats();
+    }
+
+    addDemoTask() {
+        // 添加一个示例任务
+        const demoTodo = {
+            id: Date.now(),
+            text: '欢迎使用Moltbot Todo List应用！',
+            completed: false,
+            createdAt: new Date().toISOString()
+        };
+        
+        // 检查是否已存在此示例任务
+        const existingDemoTask = this.todos.find(todo => todo.text === demoTodo.text);
+        if (!existingDemoTask) {
+            this.todos.push(demoTodo);
+            this.saveTodos();
+        }
     }
 
     bindEvents() {
