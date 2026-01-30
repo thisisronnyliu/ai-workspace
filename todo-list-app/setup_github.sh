@@ -8,13 +8,13 @@
 echo "正在创建 GitHub 仓库..."
 
 # 创建公共仓库
-gh repo create moltbot-todo-list --public --description "A beautiful and functional todo list application with modern UI design" --clone
+gh repo create jiujiu-todo-list --public --description "A beautiful and functional todo list application with modern UI design" --clone
 
 if [ $? -eq 0 ]; then
     echo "仓库创建成功！"
     
     # 进入仓库目录
-    cd moltbot-todo-list
+    cd jiujiu-todo-list
     
     # 如果是从现有代码库运行此脚本，复制文件
     # (在此处添加复制命令，如果是从模板创建)
@@ -35,7 +35,7 @@ if [ $? -eq 0 ]; then
     gh repo edit --enable-github-pages
     
     echo "GitHub Pages 已启用！"
-    echo "您的应用将在 https://[YOUR_USERNAME].github.io/moltbot-todo-list 可用"
+    echo "您的应用将在 https://[YOUR_USERNAME].github.io/jiujiu-todo-list 可用"
 else
     echo "仓库创建失败。请确保已安装 GitHub CLI 并完成认证。"
     echo "安装 GitHub CLI: https://cli.github.com/"

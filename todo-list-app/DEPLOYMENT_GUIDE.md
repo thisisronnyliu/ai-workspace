@@ -4,7 +4,7 @@
 
 1. 访问 [GitHub](https://github.com) 并登录您的账户
 2. 点击右上角的 "+" 号，选择 "New repository"
-3. 仓库名称填入 `moltbot-todo-list`
+3. 仓库名称填入 `jiujiu-todo-list`
 4. 选择 "Public"（公开）选项
 5. 不要勾选 "Initialize this repository with a README"
 6. 点击 "Create repository"
@@ -32,7 +32,7 @@
 ## 完成部署
 
 几分钟后，您的应用将在以下地址可用：
-`https://[YOUR_USERNAME].github.io/moltbot-todo-list`
+`https://[YOUR_USERNAME].github.io/jiujiu-todo-list`
 
 其中 [YOUR_USERNAME] 是您的 GitHub 用户名。
 
@@ -46,7 +46,7 @@ git init
 git add .
 git commit -m "Initial commit"
 git branch -M main
-git remote add origin https://github.com/[YOUR_USERNAME]/moltbot-todo-list.git
+git remote add origin https://github.com/[YOUR_USERNAME]/jiujiu-todo-list.git
 git push -u origin main
 ```
 

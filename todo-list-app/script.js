@@ -23,7 +23,7 @@ class TodoApp {
         const demoTodos = [
             {
                 id: Date.now(),
-                text: '欢迎使用Moltbot Todo List应用！',
+                text: '欢迎使用啾啾 Todo List应用！',
                 completed: false,
                 createdAt: new Date().toISOString()
             },
