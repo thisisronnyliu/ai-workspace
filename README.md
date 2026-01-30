@@ -2,45 +2,43 @@
 
 欢迎来到 Moltbot 云端工作空间！这里存放着所有通过 Moltbot 创建的项目。
 
+## 项目列表
+
+### [Todo List 应用](./todo-list-app/)
+一个美观简约、功能齐全的待办事项应用，具有现代化UI设计和流畅的交互体验。
+
+- 添加、编辑、删除任务
+- 标记任务完成/未完成
+- 任务筛选（全部/未完成/已完成）
+- 实时统计数据
+- 批量操作（清除已完成/清空全部）
+- 响应式设计
+- 本地数据存储
+- 流畅的动画效果
+
 ## 项目结构
 
 ```
 moltbot-workspace/
 ├── index.html          # 工作空间主页
-├── PUSH_INSTRUCTIONS.md # 推送说明
+├── README.md           # 项目说明
 ├── todo-list-app/      # Todo List 应用
 │   ├── index.html
 │   ├── styles.css
 │   ├── script.js
 │   ├── README.md
-│   ├── package.json
-│   ├── DEPLOYMENT_GUIDE.md
-│   ├── PROJECT_OVERVIEW.md
-│   └── setup_github.sh
+│   └── ...
 ```
 
-## 当前项目
+## 关于
 
-### 1. 待办事项清单 (Todo List)
-- **描述**: 一个美观简约、功能齐全的待办事项应用
-- **技术栈**: 纯前端 (HTML/CSS/JavaScript)
-- **功能**: 添加、编辑、删除任务，筛选，统计，批量操作等
-- **访问地址**: `/todo-list-app/`
-
-## 部署说明
-
-要将此工作空间部署到 GitHub Pages，请参阅 `PUSH_INSTRUCTIONS.md` 文件。
-
-## 如何添加新项目
-
-1. 在此目录下创建新项目文件夹
-2. 将项目文件放入对应文件夹
-3. 更新主页 (index.html) 以包含新项目链接
-4. 推送到 GitHub 仓库
-5. GitHub Pages 会自动更新
+这个工作空间展示了 Moltbot 的项目创建能力。所有项目都是纯前端实现，无需后端服务即可运行。
 
 ## 访问地址
 
-部署完成后，您可以通过以下地址访问：
-- 工作空间主页: `https://thisisronnyliu.github.io/moltbot-workspace/`
-- Todo List 应用: `https://thisisronnyliu.github.io/moltbot-workspace/todo-list-app/`
+- 工作空间主页: https://thisisronnyliu.github.io/moltbot-workspace/
+- Todo List 应用: https://thisisronnyliu.github.io/moltbot-workspace/todo-list-app/
+
+## 许可证
+
+MIT
