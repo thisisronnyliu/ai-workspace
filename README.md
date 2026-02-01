@@ -16,6 +16,18 @@
 - 本地数据存储
 - 流畅的动画效果
 
+### [备忘录管理系统](./memo-system/)
+一个功能丰富、界面美观的备忘录管理应用，支持多种实用功能，帮助用户高效管理日常任务和提醒。
+
+- 添加、编辑、删除备忘录
+- 标记完成/未完成状态
+- 过滤显示（全部/未完成/已完成）
+- 实时统计数据
+- 批量操作（清除已完成）
+- 数据导出功能
+- 响应式设计
+- 本地数据存储
+
 ## 项目结构
 
 ```
@@ -26,6 +38,15 @@ ai-workspace/
 │   ├── index.html
 │   ├── styles.css
 │   ├── script.js
+│   ├── README.md
+│   └── ...
+├── memo-system/        # 备忘录管理系统
+│   ├── index.html
+│   ├── css/
+│   │   └── style.css
+│   ├── js/
+│   │   └── main.js
+│   ├── images/
 │   ├── README.md
 │   └── ...
 ├── xxx-app/      # xxx 应用
@@ -41,6 +62,7 @@ ai-workspace/
 
 - 项目主页: https://thisisronnyliu.github.io/ai-workspace/
 - Todo List 应用: https://thisisronnyliu.github.io/ai-workspace/todo-list-app/
+- 备忘录管理系统: https://thisisronnyliu.github.io/ai-workspace/memo-system/
 
 ## 许可证
 

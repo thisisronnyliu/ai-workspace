@@ -3,128 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>啾啾主页</title>
+    <title>啾啾项目汇总</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
             padding: 20px;
+            color: #333;
         }
-        
+
         .container {
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
-            padding: 40px 20px;
         }
-        
+
         header {
             text-align: center;
             margin-bottom: 40px;
+            padding: 20px;
         }
-        
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+
+        header h1 {
+            font-size: 2.5em;
+            color: #2c3e50;
+            margin-bottom: 10px;
         }
-        
-        .emoji-only {
-            -webkit-text-fill-color: initial;
-            background: none;
+
+        header p {
+            font-size: 1.2em;
+            color: #7f8c8d;
         }
-        
-        .subtitle {
-            color: #666;
-            font-size: 1.2rem;
-            margin-bottom: 30px;
-        }
-        
+
         .projects-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
+            gap: 25px;
+            margin-bottom: 40px;
         }
-        
+
         .project-card {
             background: white;
             border-radius: 12px;
             padding: 25px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            border-left: 4px solid #667eea;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #eef2f7;
         }
-        
+
         .project-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
         }
-        
-        .project-title {
-            font-size: 1.3rem;
-            margin-bottom: 10px;
-            color: #333;
+
+        .project-card h3 {
+            font-size: 1.5em;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        
-        .project-description {
-            color: #666;
+
+        .project-card h3 i {
+            font-size: 1.3em;
+        }
+
+        .project-card p {
+            color: #7f8c8d;
+            line-height: 1.6;
             margin-bottom: 15px;
-            line-height: 1.5;
         }
-        
+
+        .features {
+            margin: 15px 0;
+        }
+
+        .features h4 {
+            font-size: 1.1em;
+            color: #3498db;
+            margin-bottom: 8px;
+        }
+
+        .features ul {
+            list-style-type: none;
+            padding-left: 10px;
+        }
+
+        .features li {
+            margin-bottom: 5px;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .features li:before {
+            content: "•";
+            color: #3498db;
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
         .project-link {
             display: inline-block;
-            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
             color: white;
             text-decoration: none;
             padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 500;
+            border-radius: 6px;
+            font-weight: 600;
             transition: all 0.3s ease;
+            margin-top: 10px;
         }
-        
+
         .project-link:hover {
-            transform: scale(1.05);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 117, 252, 0.3);
         }
-        
+
         footer {
             text-align: center;
             margin-top: 40px;
-            color: #999;
-            font-size: 0.9rem;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+            }
+            
+            header h1 {
+                font-size: 2em;
+            }
+            
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><span class="emoji-only">🐱</span> 啾啾主页</h1>
-            <p class="subtitle">这里存放着所有通过啾啾构建的项目</p>
+            <h1>🐱 啾啾项目汇总</h1>
+            <p>这里展示所有由啾啾构建的项目应用</p>
         </header>
-        
-        <main>
-            <h2>当前项目</h2>
-            <div class="projects-grid">
-                <div class="project-card">
-                    <h3 class="project-title">📝 待办事项清单 (Todo List)</h3>
-                    <p class="project-description">一个美观简约、功能齐全的待办事项应用，具有现代化UI设计和流畅的交互体验。</p>
-                    <a href="./todo-list-app/" class="project-link">访问项目 →</a>
+
+        <div class="projects-grid">
+            <div class="project-card">
+                <h3><i>✅</i> Todo List 应用</h3>
+                <p>一个美观简约、功能齐全的待办事项应用，具有现代化UI设计和流畅的交互体验。</p>
+                
+                <div class="features">
+                    <h4>功能特性：</h4>
+                    <ul>
+                        <li>添加、编辑、删除任务</li>
+                        <li>标记任务完成/未完成</li>
+                        <li>任务筛选（全部/未完成/已完成）</li>
+                        <li>实时统计数据</li>
+                        <li>批量操作（清除已完成/清空全部）</li>
+                        <li>响应式设计</li>
+                        <li>本地数据存储</li>
+                        <li>流畅的动画效果</li>
+                    </ul>
                 </div>
+                
+                <a href="./todo-list-app/" class="project-link">访问应用</a>
             </div>
-        </main>
-        
+            
+            <div class="project-card">
+                <h3><i>📝</i> 备忘录管理系统</h3>
+                <p>一个功能丰富、界面美观的备忘录管理应用，支持多种实用功能，帮助用户高效管理日常任务和提醒。</p>
+                
+                <div class="features">
+                    <h4>功能特性：</h4>
+                    <ul>
+                        <li>添加、编辑、删除备忘录</li>
+                        <li>标记完成/未完成状态</li>
+                        <li>过滤显示（全部/未完成/已完成）</li>
+                        <li>实时统计数据</li>
+                        <li>批量操作（清除已完成）</li>
+                        <li>数据导出功能</li>
+                        <li>响应式设计</li>
+                        <li>本地数据存储</li>
+                    </ul>
+                </div>
+                
+                <a href="./memo-system/" class="project-link">访问应用</a>
+            </div>
+        </div>
+
         <footer>
-            <p>Powered by 啾啾</p>
+            <p>更多项目即将推出，敬请期待！</p>
+            <p>&copy; 2026 啾啾项目仓库. MIT 许可证.</p>
         </footer>
     </div>
 </body>

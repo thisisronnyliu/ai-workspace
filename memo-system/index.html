@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>啾啾备忘录管理系统</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📝 啾啾备忘录管理系统</h1>
+            <p>轻量级、高效的个人备忘录管理工具</p>
+        </header>
+        
+        <div class="controls">
+            <input type="text" id="memoInput" placeholder="输入新的备忘录..." maxlength="200">
+            <button id="addMemoBtn">添加备忘录</button>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">全部</button>
+                <button class="filter-btn" data-filter="active">未完成</button>
+                <button class="filter-btn" data-filter="completed">已完成</button>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <span id="totalCount">总计: 0</span>
+            <span id="activeCount">未完成: 0</span>
+            <span id="completedCount">已完成: 0</span>
+        </div>
+        
+        <ul id="memoList" class="memo-list">
+            <!-- Memo items will be added here dynamically -->
+        </ul>
+        
+        <div class="actions">
+            <button id="clearCompletedBtn">清除已完成</button>
+            <button id="exportBtn">导出备忘录</button>
+        </div>
+    </div>
+    
+    <script src="js/main.js"></script>
+</body>
+</html>
