@@ -14,12 +14,19 @@
         </header>
         
         <div class="controls">
-            <input type="text" id="memoInput" placeholder="输入新的备忘录..." maxlength="200">
-            <button id="addMemoBtn">添加备忘录</button>
-            <div class="filter-buttons">
-                <button class="filter-btn active" data-filter="all">全部</button>
-                <button class="filter-btn" data-filter="active">未完成</button>
-                <button class="filter-btn" data-filter="completed">已完成</button>
+            <div class="input-group">
+                <input type="text" id="memoInput" placeholder="输入新的备忘录..." maxlength="200">
+                <button id="addMemoBtn">添加备忘录</button>
+            </div>
+            <div class="advanced-controls">
+                <div class="search-container">
+                    <input type="text" id="searchInput" placeholder="搜索备忘录...">
+                </div>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">全部</button>
+                    <button class="filter-btn" data-filter="active">未完成</button>
+                    <button class="filter-btn" data-filter="completed">已完成</button>
+                </div>
             </div>
         </div>
         
@@ -34,8 +41,13 @@
         </ul>
         
         <div class="actions">
+            <div class="import-export">
+                <button id="importBtn">导入备忘录</button>
+                <button id="exportBtn">导出备忘录</button>
+                <input type="file" id="fileInput" accept=".json" style="display: none;">
+            </div>
             <button id="clearCompletedBtn">清除已完成</button>
-            <button id="exportBtn">导出备忘录</button>
+            <button id="toggleThemeBtn">切换主题</button>
         </div>
     </div>
     
