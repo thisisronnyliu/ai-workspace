@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>多轮录音分析</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f8f7;
+      --panel: #ffffff;
+      --panel-soft: #eef5f2;
+      --ink: #17211d;
+      --muted: #66736d;
+      --line: #dce5e1;
+      --brand: #087f68;
+      --brand-dark: #056452;
+      --accent: #d97706;
+      --danger: #c2410c;
+      --shadow: 0 16px 42px rgba(18, 35, 29, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.92), rgba(246,248,247,0.84)),
+        repeating-linear-gradient(135deg, rgba(8,127,104,0.06) 0 1px, transparent 1px 18px);
+      color: var(--ink);
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", Arial, sans-serif;
+      letter-spacing: 0;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .app {
+      width: min(1180px, calc(100vw - 32px));
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 28px 0 130px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 4px 0 24px;
+    }
+
+    .title-block h1 {
+      margin: 0;
+      font-size: clamp(26px, 4vw, 42px);
+      line-height: 1.08;
+      font-weight: 800;
+    }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .tool-button,
+    .icon-button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      cursor: pointer;
+      transition: transform .16s ease, border-color .16s ease, background .16s ease, color .16s ease;
+    }
+
+    .tool-button {
+      min-height: 42px;
+      padding: 0 14px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+    }
+
+    .tool-button:disabled {
+      cursor: not-allowed;
+      opacity: .48;
+    }
+
+    .tool-button:not(:disabled):hover,
+    .icon-button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(8, 127, 104, 0.45);
+    }
+
+    .tool-button.primary {
+      border-color: var(--brand);
+      background: var(--brand);
+      color: white;
+    }
+
+    .tool-button.primary:not(:disabled):hover {
+      background: var(--brand-dark);
+    }
+
+    .record-list {
+      column-count: 3;
+      column-gap: 18px;
+    }
+
+    .empty-state {
+      min-height: 48vh;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      text-align: center;
+      border: 1px dashed var(--line);
+      background: rgba(255, 255, 255, 0.56);
+      border-radius: 8px;
+    }
+
+    .record-card {
+      display: inline-block;
+      width: 100%;
+      margin: 0 0 18px;
+      break-inside: avoid;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .record-card.selected {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 2px rgba(8, 127, 104, 0.18), var(--shadow);
+    }
+
+    .record-head {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: start;
+      gap: 12px;
+      padding: 16px 16px 10px;
+      background: linear-gradient(180deg, var(--panel-soft), #ffffff);
+    }
+
+    .select-box {
+      width: 18px;
+      height: 18px;
+      margin-top: 3px;
+      accent-color: var(--brand);
+    }
+
+    .record-no {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 36px;
+      height: 36px;
+      padding: 0 8px;
+      border-radius: 8px;
+      background: var(--ink);
+      color: white;
+      font-weight: 800;
+    }
+
+    .record-title {
+      min-width: 0;
+    }
+
+    .record-title h2 {
+      margin: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 18px;
+      line-height: 1.35;
+    }
+
+    .record-time {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .record-body {
+      padding: 14px 16px 16px;
+    }
+
+    .transcript {
+      margin: 0;
+      color: #26332e;
+      line-height: 1.7;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+
+    .note-text {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-left: 3px solid var(--accent);
+      background: #fff7ed;
+      color: #593617;
+      border-radius: 0 8px 8px 0;
+      line-height: 1.6;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 0 16px 16px;
+    }
+
+    .icon-button {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: inline-grid;
+      place-items: center;
+    }
+
+    .icon-button svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 2.2;
+    }
+
+    .icon-button.danger {
+      color: var(--danger);
+    }
+
+    .bottom-recorder {
+      position: fixed;
+      inset: auto 0 0;
+      z-index: 10;
+      border-top: 1px solid rgba(220, 229, 225, 0.95);
+      background: rgba(246, 248, 247, 0.92);
+      backdrop-filter: blur(14px);
+    }
+
+    .recorder-inner {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 16px 0;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 14px;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .record-button {
+      width: 108px;
+      height: 108px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--brand);
+      color: white;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      gap: 3px;
+      box-shadow: 0 18px 40px rgba(8, 127, 104, 0.28);
+      transition: transform .16s ease, background .16s ease, box-shadow .16s ease;
+      touch-action: none;
+      user-select: none;
+    }
+
+    .record-button svg {
+      width: 28px;
+      height: 28px;
+      stroke-width: 2.4;
+    }
+
+    .record-button span {
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .record-button.recording {
+      background: #c2410c;
+      transform: scale(1.04);
+      box-shadow: 0 18px 48px rgba(194, 65, 12, 0.32);
+    }
+
+    .record-button:active {
+      transform: scale(.98);
+    }
+
+    .live-text {
+      justify-self: end;
+      color: #394943;
+      font-size: 14px;
+      line-height: 1.5;
+      max-width: 360px;
+      max-height: 44px;
+      overflow: hidden;
+      text-align: right;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 900px) {
+      .record-list {
+        column-count: 2;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .toolbar {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .app {
+        width: min(100% - 22px, 1180px);
+        padding-top: 18px;
+      }
+
+      .record-list {
+        column-count: 1;
+      }
+
+      .recorder-inner {
+        width: min(100% - 22px, 1180px);
+        grid-template-columns: 1fr auto;
+      }
+
+      .live-text {
+        grid-column: 1 / -1;
+        justify-self: stretch;
+        text-align: left;
+        max-width: none;
+      }
+
+      .record-button {
+        width: 92px;
+        height: 92px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="title-block">
+        <h1>多轮录音分析</h1>
+        <div class="meta-row">
+          <span id="countText">0 条记录</span>
+          <span id="selectedText">已选择 0 条</span>
+        </div>
+      </div>
+      <div class="toolbar">
+        <button class="tool-button" id="selectAllButton" type="button">全选</button>
+        <button class="tool-button primary" id="exportButton" type="button" disabled>
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <path d="M7 10l5 5 5-5"></path>
+            <path d="M12 15V3"></path>
+          </svg>
+          导出 CSV
+        </button>
+      </div>
+    </header>
+
+    <section class="record-list" id="recordList" aria-live="polite">
+      <div class="empty-state" id="emptyState">暂无录音记录</div>
+    </section>
+  </main>
+
+  <footer class="bottom-recorder">
+    <div class="recorder-inner">
+      <div class="status" id="statusText">准备就绪</div>
+      <button class="record-button" id="recordButton" type="button" aria-label="按住开始录音">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+          <path d="M12 19v3"></path>
+        </svg>
+        <span>按住录音</span>
+      </button>
+      <div class="live-text" id="liveText"></div>
+    </div>
+  </footer>
+
+  <script id="app-script">
+    (function () {
+      const state = {
+        records: [],
+        selected: new Set(),
+        nextId: 1,
+        isRecording: false,
+        mediaRecorder: null,
+        mediaStream: null,
+        recognition: null,
+        finalTranscript: '',
+        interimTranscript: '',
+        audioChunks: []
+      };
+
+      const els = {};
+
+      function formatTitle(text) {
+        const normalized = String(text || '未识别到文字').trim() || '未识别到文字';
+        const chars = Array.from(normalized);
+        return chars.length > 10 ? chars.slice(0, 10).join('') + '...' : normalized;
+      }
+
+      function formatDate(date) {
+        const pad = value => String(value).padStart(2, '0');
+        return [
+          date.getFullYear(),
+          pad(date.getMonth() + 1),
+          pad(date.getDate())
+        ].join('-') + ' ' + [
+          pad(date.getHours()),
+          pad(date.getMinutes()),
+          pad(date.getSeconds())
+        ].join(':');
+      }
+
+      function escapeCsv(value) {
+        const text = String(value ?? '');
+        return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+      }
+
+      function toCsv(records) {
+        const header = ['序号', '创建时间', '文本内容', '备注'];
+        const rows = records.map(record => [
+          record.id,
+          record.createdAt,
+          record.text,
+          record.note || ''
+        ]);
+        return '\uFEFF' + [header, ...rows]
+          .map(row => row.map(escapeCsv).join(','))
+          .join('\r\n');
+      }
+
+      function icon(name) {
+        const icons = {
+          note: '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>',
+          copy: '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>',
+          delete: '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path></svg>'
+        };
+        return icons[name] || '';
+      }
+
+      function render() {
+        if (!els.recordList) return;
+        els.recordList.innerHTML = '';
+
+        if (!state.records.length) {
+          const empty = document.createElement('div');
+          empty.className = 'empty-state';
+          empty.id = 'emptyState';
+          empty.textContent = '暂无录音记录';
+          els.recordList.appendChild(empty);
+        }
+
+        state.records.forEach(record => {
+          const card = document.createElement('article');
+          card.className = 'record-card' + (state.selected.has(record.id) ? ' selected' : '');
+          card.dataset.id = String(record.id);
+          card.innerHTML = `
+            <div class="record-head">
+              <input class="select-box" type="checkbox" aria-label="选择第 ${record.id} 条记录" ${state.selected.has(record.id) ? 'checked' : ''}>
+              <div class="record-title">
+                <span class="record-no">#${record.id}</span>
+                <h2 title="${escapeHtml(record.text)}">${escapeHtml(formatTitle(record.text))}</h2>
+                <div class="record-time">${escapeHtml(record.createdAt)}</div>
+              </div>
+            </div>
+            <div class="record-body">
+              <p class="transcript">${escapeHtml(record.text)}</p>
+              ${record.note ? `<div class="note-text">${escapeHtml(record.note)}</div>` : ''}
+            </div>
+            <div class="actions">
+              <button class="icon-button" type="button" title="备注" aria-label="备注" data-action="note">${icon('note')}</button>
+              <button class="icon-button" type="button" title="复制文字" aria-label="复制文字" data-action="copy">${icon('copy')}</button>
+              <button class="icon-button danger" type="button" title="删除" aria-label="删除" data-action="delete">${icon('delete')}</button>
+            </div>
+          `;
+          els.recordList.appendChild(card);
+        });
+
+        updateSummary();
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function updateSummary() {
+        if (!els.countText) return;
+        els.countText.textContent = state.records.length + ' 条记录';
+        els.selectedText.textContent = '已选择 ' + state.selected.size + ' 条';
+        els.exportButton.disabled = state.selected.size === 0;
+        els.selectAllButton.textContent = state.records.length && state.selected.size === state.records.length ? '取消全选' : '全选';
+      }
+
+      function createRecord(text) {
+        const normalized = String(text || '').trim() || '未识别到文字';
+        state.records.unshift({
+          id: state.nextId++,
+          createdAt: formatDate(new Date()),
+          text: normalized,
+          note: ''
+        });
+        render();
+      }
+
+      async function startRecording(event) {
+        if (event && event.pointerType === 'mouse' && event.button !== 0) return;
+        if (state.isRecording) return;
+
+        state.isRecording = true;
+        state.finalTranscript = '';
+        state.interimTranscript = '';
+        state.audioChunks = [];
+        setStatus('正在录音');
+        setLiveText('');
+        els.recordButton.classList.add('recording');
+        els.recordButton.setPointerCapture?.(event?.pointerId);
+
+        try {
+          await startMicrophone();
+          startSpeechRecognition();
+        } catch (error) {
+          setStatus(error.message || '无法开始录音');
+          stopRecording({ save: false });
+        }
+      }
+
+      async function startMicrophone() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error('当前浏览器不支持录音');
+        }
+        state.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        if (typeof MediaRecorder !== 'undefined') {
+          state.mediaRecorder = new MediaRecorder(state.mediaStream);
+          state.mediaRecorder.addEventListener('dataavailable', event => {
+            if (event.data && event.data.size) state.audioChunks.push(event.data);
+          });
+          state.mediaRecorder.start();
+        }
+      }
+
+      function startSpeechRecognition() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+          setStatus('浏览器不支持语音识别，仅保存录音占位文本');
+          return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'zh-CN';
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.onresult = event => {
+          let interim = '';
+          for (let i = event.resultIndex; i < event.results.length; i += 1) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              state.finalTranscript += transcript;
+            } else {
+              interim += transcript;
+            }
+          }
+          state.interimTranscript = interim;
+          setLiveText((state.finalTranscript + interim).trim());
+        };
+        recognition.onerror = () => {
+          setStatus('语音识别中断，录音仍可结束保存');
+        };
+        recognition.start();
+        state.recognition = recognition;
+      }
+
+      function stopRecording(options = {}) {
+        if (!state.isRecording) return;
+        const shouldSave = options.save !== false;
+        state.isRecording = false;
+        els.recordButton.classList.remove('recording');
+
+        if (state.recognition) {
+          try { state.recognition.stop(); } catch (error) {}
+          state.recognition = null;
+        }
+
+        if (state.mediaRecorder && state.mediaRecorder.state !== 'inactive') {
+          try { state.mediaRecorder.stop(); } catch (error) {}
+        }
+
+        if (state.mediaStream) {
+          state.mediaStream.getTracks().forEach(track => track.stop());
+          state.mediaStream = null;
+        }
+
+        if (shouldSave) {
+          const text = (state.finalTranscript + state.interimTranscript).trim();
+          createRecord(text);
+          setStatus('已保存录音记录');
+        }
+        setLiveText('');
+      }
+
+      function setStatus(text) {
+        if (els.statusText) els.statusText.textContent = text;
+      }
+
+      function setLiveText(text) {
+        if (els.liveText) els.liveText.textContent = text;
+      }
+
+      async function copyText(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const input = document.createElement('textarea');
+          input.value = text;
+          input.className = 'sr-only';
+          document.body.appendChild(input);
+          input.select();
+          document.execCommand('copy');
+          input.remove();
+        }
+        setStatus('文字已复制');
+      }
+
+      function exportSelected() {
+        const selectedRecords = state.records
+          .filter(record => state.selected.has(record.id))
+          .sort((a, b) => a.id - b.id);
+        if (!selectedRecords.length) return;
+
+        const blob = new Blob([toCsv(selectedRecords)], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'recording-export.csv';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+        setStatus('CSV 已导出');
+      }
+
+      function bindEvents() {
+        els.recordButton.addEventListener('pointerdown', startRecording);
+        els.recordButton.addEventListener('pointerup', stopRecording);
+        els.recordButton.addEventListener('pointercancel', stopRecording);
+        els.recordButton.addEventListener('pointerleave', event => {
+          if (state.isRecording && event.pointerType === 'mouse') stopRecording();
+        });
+        els.recordButton.addEventListener('contextmenu', event => event.preventDefault());
+
+        els.exportButton.addEventListener('click', exportSelected);
+        els.selectAllButton.addEventListener('click', () => {
+          if (state.selected.size === state.records.length) {
+            state.selected.clear();
+          } else {
+            state.records.forEach(record => state.selected.add(record.id));
+          }
+          render();
+        });
+
+        els.recordList.addEventListener('change', event => {
+          if (!event.target.classList.contains('select-box')) return;
+          const card = event.target.closest('.record-card');
+          const id = Number(card.dataset.id);
+          if (event.target.checked) state.selected.add(id);
+          else state.selected.delete(id);
+          render();
+        });
+
+        els.recordList.addEventListener('click', async event => {
+          const button = event.target.closest('button[data-action]');
+          if (!button) return;
+          const card = button.closest('.record-card');
+          const id = Number(card.dataset.id);
+          const record = state.records.find(item => item.id === id);
+          if (!record) return;
+
+          if (button.dataset.action === 'note') {
+            const value = window.prompt('备注', record.note || '');
+            if (value !== null) {
+              record.note = value.trim();
+              render();
+            }
+          }
+
+          if (button.dataset.action === 'copy') {
+            await copyText(record.text);
+          }
+
+          if (button.dataset.action === 'delete') {
+            state.records = state.records.filter(item => item.id !== id);
+            state.selected.delete(id);
+            render();
+            setStatus('记录已删除');
+          }
+        });
+      }
+
+      function init() {
+        els.recordList = document.getElementById('recordList');
+        els.countText = document.getElementById('countText');
+        els.selectedText = document.getElementById('selectedText');
+        els.exportButton = document.getElementById('exportButton');
+        els.selectAllButton = document.getElementById('selectAllButton');
+        els.recordButton = document.getElementById('recordButton');
+        els.statusText = document.getElementById('statusText');
+        els.liveText = document.getElementById('liveText');
+        bindEvents();
+        render();
+      }
+
+      window.__recordingAppTest = { formatTitle, toCsv, escapeCsv };
+      document.addEventListener('DOMContentLoaded', init);
+    })();
+  </script>
+</body>
+</html>
