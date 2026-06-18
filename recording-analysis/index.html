@@ -292,6 +292,8 @@
       box-shadow: 0 18px 40px rgba(8, 127, 104, 0.28);
       transition: transform .16s ease, background .16s ease, box-shadow .16s ease;
       touch-action: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
       user-select: none;
     }
 
@@ -560,6 +562,7 @@
 
       async function startRecording(event) {
         if (event && event.pointerType === 'mouse' && event.button !== 0) return;
+        if (event && event.pointerType !== 'mouse') event.preventDefault?.();
         if (state.isRecording) return;
 
         state.isRecording = true;
@@ -694,6 +697,10 @@
         setStatus('CSV 已导出');
       }
 
+      function preventRecordButtonDefault(event) {
+        event.preventDefault();
+      }
+
       function bindEvents() {
         els.recordButton.addEventListener('pointerdown', startRecording);
         els.recordButton.addEventListener('pointerup', stopRecording);
@@ -701,7 +708,10 @@
         els.recordButton.addEventListener('pointerleave', event => {
           if (state.isRecording && event.pointerType === 'mouse') stopRecording();
         });
-        els.recordButton.addEventListener('contextmenu', event => event.preventDefault());
+        els.recordButton.addEventListener('touchstart', preventRecordButtonDefault, { passive: false });
+        els.recordButton.addEventListener('selectstart', preventRecordButtonDefault);
+        els.recordButton.addEventListener('dragstart', preventRecordButtonDefault);
+        els.recordButton.addEventListener('contextmenu', preventRecordButtonDefault);
 
         els.exportButton.addEventListener('click', exportSelected);
         els.selectAllButton.addEventListener('click', () => {

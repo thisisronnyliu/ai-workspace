@@ -61,5 +61,10 @@ assert.match(html, /data-action="copy"/, 'record actions should include copy tex
 assert.match(html, /data-action="delete"/, 'record actions should include delete');
 assert.match(html, /id="recordButton"/, 'page should include the hold-to-record button');
 assert.match(html, /id="exportButton"/, 'page should include the CSV export button');
+assert.match(html, /-webkit-touch-callout:\s*none/, 'record button should disable mobile long-press callout');
+assert.match(html, /-webkit-user-select:\s*none/, 'record button should disable mobile text selection');
+assert.match(html, /addEventListener\('touchstart',\s*preventRecordButtonDefault,\s*\{\s*passive:\s*false\s*\}\)/, 'record button should prevent touchstart defaults');
+assert.match(html, /addEventListener\('selectstart',\s*preventRecordButtonDefault\)/, 'record button should prevent selection defaults');
+assert.match(html, /addEventListener\('dragstart',\s*preventRecordButtonDefault\)/, 'record button should prevent drag defaults');
 
 console.log('recording-page tests passed');
