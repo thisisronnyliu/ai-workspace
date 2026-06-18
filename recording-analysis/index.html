@@ -44,7 +44,7 @@
       width: min(1180px, calc(100vw - 32px));
       min-height: 100vh;
       margin: 0 auto;
-      padding: 28px 0 130px;
+      padding: 28px 0 150px;
     }
 
     .topbar {
@@ -187,11 +187,10 @@
 
     .record-title h2 {
       margin: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
       font-size: 18px;
       line-height: 1.35;
+      word-break: break-word;
+      white-space: pre-wrap;
     }
 
     .record-time {
@@ -264,7 +263,7 @@
       margin: 0 auto;
       padding: 16px 0;
       display: grid;
-      grid-template-columns: 1fr auto 1fr;
+      grid-template-columns: 1fr auto auto 1fr;
       align-items: center;
       gap: 16px;
     }
@@ -314,6 +313,15 @@
       box-shadow: 0 18px 48px rgba(194, 65, 12, 0.32);
     }
 
+    .record-button.ai-button {
+      background: var(--accent);
+      box-shadow: 0 18px 40px rgba(217, 119, 6, 0.25);
+    }
+
+    .record-button.ai-button.recording {
+      background: #c2410c;
+    }
+
     .record-button:active {
       transform: scale(.98);
     }
@@ -359,7 +367,7 @@
     @media (max-width: 620px) {
       .app {
         width: min(100% - 22px, 1180px);
-        padding-top: 18px;
+        padding: 18px 0 230px;
       }
 
       .record-list {
@@ -368,7 +376,11 @@
 
       .recorder-inner {
         width: min(100% - 22px, 1180px);
-        grid-template-columns: 1fr auto;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .status {
+        grid-column: 1 / -1;
       }
 
       .live-text {
@@ -379,6 +391,7 @@
       }
 
       .record-button {
+        justify-self: center;
         width: 92px;
         height: 92px;
       }
@@ -416,13 +429,21 @@
   <footer class="bottom-recorder">
     <div class="recorder-inner">
       <div class="status" id="statusText">准备就绪</div>
-      <button class="record-button" id="recordButton" type="button" aria-label="按住开始录音">
+      <button class="record-button user-button" id="userRecordButton" type="button" aria-label="按住录制用户输入">
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
           <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
           <path d="M12 19v3"></path>
         </svg>
-        <span>按住录音</span>
+        <span>用户输入</span>
+      </button>
+      <button class="record-button ai-button" id="aiRecordButton" type="button" aria-label="按住录制 AI 回复">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+          <path d="M12 19v3"></path>
+        </svg>
+        <span>AI 回复</span>
       </button>
       <div class="live-text" id="liveText"></div>
     </div>
@@ -438,6 +459,7 @@
         mediaRecorder: null,
         mediaStream: null,
         recognition: null,
+        recordingTarget: null,
         finalTranscript: '',
         interimTranscript: '',
         audioChunks: []
@@ -445,10 +467,84 @@
 
       const els = {};
 
-      function formatTitle(text) {
-        const normalized = String(text || '未识别到文字').trim() || '未识别到文字';
-        const chars = Array.from(normalized);
-        return chars.length > 10 ? chars.slice(0, 10).join('') + '...' : normalized;
+      function formatTranscript(text) {
+        let normalized = String(text || '').replace(/\s+/g, ' ').trim();
+        if (!normalized) return '未识别到文字';
+
+        normalized = normalized
+          .replace(/\s*([，。！？；：、,.!?;:])\s*/g, '$1')
+          .replace(/,/g, '，')
+          .replace(/\./g, '。')
+          .replace(/!/g, '！')
+          .replace(/\?/g, '？')
+          .replace(/;/g, '；')
+          .replace(/:/g, '：');
+
+        const hasPunctuation = /[，。！？；：、]/.test(normalized);
+        const hasTerminalPunctuation = /[。！？]$/.test(normalized);
+        const asksQuestion = /(吗|么|呢)$|什么|为什么|怎么|怎样|如何|是否|有没有|可不可以|能不能|要不要/.test(normalized);
+
+        if (hasPunctuation) {
+          return hasTerminalPunctuation ? normalized : normalized + (asksQuestion ? '？' : '。');
+        }
+
+        const boundaryWords = [
+          '然后', '接着', '另外', '但是', '不过', '所以', '因为',
+          '如果', '同时', '最后', '首先', '其次', '比如', '例如',
+          '还有', '而且', '并且'
+        ];
+        const boundaryPattern = new RegExp('(.{4,})(' + boundaryWords.join('|') + ')', 'g');
+        normalized = normalized.replace(boundaryPattern, '$1，$2');
+
+        normalized = normalized
+          .split('，')
+          .map(part => {
+            const chars = Array.from(part);
+            if (chars.length <= 24) return part;
+
+            const chunks = [];
+            for (let i = 0; i < chars.length; i += 18) {
+              chunks.push(chars.slice(i, i + 18).join(''));
+            }
+            return chunks.join('，');
+          })
+          .join('，');
+
+        return normalized + (asksQuestion ? '？' : '。');
+      }
+
+      function applyRecordingResult(records, target, text, createdAt, nextId) {
+        const normalized = formatTranscript(text);
+        const updatedRecords = records.slice();
+
+        if (target === 'ai') {
+          const pendingIndex = updatedRecords.findIndex(record => !record.aiText);
+          if (pendingIndex >= 0) {
+            updatedRecords[pendingIndex] = {
+              ...updatedRecords[pendingIndex],
+              aiText: normalized
+            };
+            return { records: updatedRecords, nextId };
+          }
+
+          updatedRecords.unshift({
+            id: nextId,
+            createdAt,
+            userText: '',
+            aiText: normalized,
+            note: ''
+          });
+          return { records: updatedRecords, nextId: nextId + 1 };
+        }
+
+        updatedRecords.unshift({
+          id: nextId,
+          createdAt,
+          userText: normalized,
+          aiText: '',
+          note: ''
+        });
+        return { records: updatedRecords, nextId: nextId + 1 };
       }
 
       function formatDate(date) {
@@ -470,12 +566,13 @@
       }
 
       function toCsv(records) {
-        const header = ['序号', '创建时间', '文本内容', '备注'];
+        const header = ['序号', '用户输入', 'AI回复', '备注', '创建时间'];
         const rows = records.map(record => [
           record.id,
-          record.createdAt,
-          record.text,
-          record.note || ''
+          record.userText || '',
+          record.aiText || '',
+          record.note || '',
+          record.createdAt
         ]);
         return '\uFEFF' + [header, ...rows]
           .map(row => row.map(escapeCsv).join(','))
@@ -512,12 +609,12 @@
               <input class="select-box" type="checkbox" aria-label="选择第 ${record.id} 条记录" ${state.selected.has(record.id) ? 'checked' : ''}>
               <div class="record-title">
                 <span class="record-no">#${record.id}</span>
-                <h2 title="${escapeHtml(record.text)}">${escapeHtml(formatTitle(record.text))}</h2>
+                <h2>${escapeHtml(record.userText || '暂无用户输入')}</h2>
                 <div class="record-time">${escapeHtml(record.createdAt)}</div>
               </div>
             </div>
             <div class="record-body">
-              <p class="transcript">${escapeHtml(record.text)}</p>
+              <p class="transcript">${escapeHtml(record.aiText || '暂无 AI 回复')}</p>
               ${record.note ? `<div class="note-text">${escapeHtml(record.note)}</div>` : ''}
             </div>
             <div class="actions">
@@ -549,30 +646,38 @@
         els.selectAllButton.textContent = state.records.length && state.selected.size === state.records.length ? '取消全选' : '全选';
       }
 
-      function createRecord(text) {
-        const normalized = String(text || '').trim() || '未识别到文字';
-        state.records.unshift({
-          id: state.nextId++,
-          createdAt: formatDate(new Date()),
-          text: normalized,
-          note: ''
-        });
+      function saveRecordingResult(target, text) {
+        const result = applyRecordingResult(
+          state.records,
+          target,
+          text,
+          formatDate(new Date()),
+          state.nextId
+        );
+        state.records = result.records;
+        state.nextId = result.nextId;
         render();
       }
 
-      async function startRecording(event) {
+      function getRecordButton(target) {
+        return target === 'ai' ? els.aiRecordButton : els.userRecordButton;
+      }
+
+      async function startRecording(target, event) {
         if (event && event.pointerType === 'mouse' && event.button !== 0) return;
         if (event && event.pointerType !== 'mouse') event.preventDefault?.();
         if (state.isRecording) return;
 
         state.isRecording = true;
+        state.recordingTarget = target;
         state.finalTranscript = '';
         state.interimTranscript = '';
         state.audioChunks = [];
-        setStatus('正在录音');
+        setStatus(target === 'ai' ? '正在录制 AI 回复' : '正在录制用户输入');
         setLiveText('');
-        els.recordButton.classList.add('recording');
-        els.recordButton.setPointerCapture?.(event?.pointerId);
+        const button = getRecordButton(target);
+        button.classList.add('recording');
+        button.setPointerCapture?.(event?.pointerId);
 
         try {
           await startMicrophone();
@@ -632,7 +737,8 @@
         if (!state.isRecording) return;
         const shouldSave = options.save !== false;
         state.isRecording = false;
-        els.recordButton.classList.remove('recording');
+        els.userRecordButton.classList.remove('recording');
+        els.aiRecordButton.classList.remove('recording');
 
         if (state.recognition) {
           try { state.recognition.stop(); } catch (error) {}
@@ -650,9 +756,11 @@
 
         if (shouldSave) {
           const text = (state.finalTranscript + state.interimTranscript).trim();
-          createRecord(text);
-          setStatus('已保存录音记录');
+          const target = state.recordingTarget || 'user';
+          saveRecordingResult(target, text);
+          setStatus(target === 'ai' ? '已保存 AI 回复' : '已保存用户输入');
         }
+        state.recordingTarget = null;
         setLiveText('');
       }
 
@@ -701,17 +809,22 @@
         event.preventDefault();
       }
 
-      function bindEvents() {
-        els.recordButton.addEventListener('pointerdown', startRecording);
-        els.recordButton.addEventListener('pointerup', stopRecording);
-        els.recordButton.addEventListener('pointercancel', stopRecording);
-        els.recordButton.addEventListener('pointerleave', event => {
+      function bindRecordButton(button, target) {
+        button.addEventListener('pointerdown', event => startRecording(target, event));
+        button.addEventListener('pointerup', stopRecording);
+        button.addEventListener('pointercancel', stopRecording);
+        button.addEventListener('pointerleave', event => {
           if (state.isRecording && event.pointerType === 'mouse') stopRecording();
         });
-        els.recordButton.addEventListener('touchstart', preventRecordButtonDefault, { passive: false });
-        els.recordButton.addEventListener('selectstart', preventRecordButtonDefault);
-        els.recordButton.addEventListener('dragstart', preventRecordButtonDefault);
-        els.recordButton.addEventListener('contextmenu', preventRecordButtonDefault);
+        button.addEventListener('touchstart', preventRecordButtonDefault, { passive: false });
+        button.addEventListener('selectstart', preventRecordButtonDefault);
+        button.addEventListener('dragstart', preventRecordButtonDefault);
+        button.addEventListener('contextmenu', preventRecordButtonDefault);
+      }
+
+      function bindEvents() {
+        bindRecordButton(els.userRecordButton, 'user');
+        bindRecordButton(els.aiRecordButton, 'ai');
 
         els.exportButton.addEventListener('click', exportSelected);
         els.selectAllButton.addEventListener('click', () => {
@@ -749,7 +862,7 @@
           }
 
           if (button.dataset.action === 'copy') {
-            await copyText(record.text);
+            await copyText(record.aiText || record.userText || '');
           }
 
           if (button.dataset.action === 'delete') {
@@ -767,14 +880,15 @@
         els.selectedText = document.getElementById('selectedText');
         els.exportButton = document.getElementById('exportButton');
         els.selectAllButton = document.getElementById('selectAllButton');
-        els.recordButton = document.getElementById('recordButton');
+        els.userRecordButton = document.getElementById('userRecordButton');
+        els.aiRecordButton = document.getElementById('aiRecordButton');
         els.statusText = document.getElementById('statusText');
         els.liveText = document.getElementById('liveText');
         bindEvents();
         render();
       }
 
-      window.__recordingAppTest = { formatTitle, toCsv, escapeCsv };
+      window.__recordingAppTest = { formatTranscript, applyRecordingResult, toCsv, escapeCsv };
       document.addEventListener('DOMContentLoaded', init);
     })();
   </script>
