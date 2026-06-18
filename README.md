@@ -39,6 +39,17 @@
 - 订单管理和提交功能
 - 响应式设计，适配多设备
 
+### [多轮录音分析](./recording-analysis/)
+一个面向连续语音记录和整理的录音分析工具，支持多轮录音、文字识别、备注管理和数据导出。
+
+- 按住按钮快速录音
+- 实时语音识别与文本记录
+- 多条录音记录列表展示
+- 支持记录选择与批量导出 CSV
+- 为单条记录添加备注
+- 复制文字与删除记录
+- 响应式设计，适配多设备
+
 ## 项目结构
 
 ```
@@ -69,6 +80,9 @@ ai-workspace/
 │   ├── images/
 │   ├── README.md
 │   └── ...
+├── recording-analysis/  # 多轮录音分析
+│   ├── index.html
+│   └── tests/
 ├── xxx-app/      # xxx 应用
 ```
 
@@ -84,6 +98,7 @@ ai-workspace/
 - Todo List 应用: https://thisisronnyliu.github.io/ai-workspace/todo-list-app/
 - 备忘录管理系统: https://thisisronnyliu.github.io/ai-workspace/memo-system/
 - 餐厅点餐系统: https://thisisronnyliu.github.io/ai-workspace/restaurant-order-system/
+- 多轮录音分析: https://thisisronnyliu.github.io/ai-workspace/recording-analysis/
 
 ## 许可证
 
